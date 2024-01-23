@@ -5,7 +5,7 @@
 # Using the Monitoring Application
 
 The SAP Data Intelligence Monitoring application offers the following capabilities.
-
+ 
 Tenant administrator users, and developer member users with the sap.dh.monitoring policy can view all tenant users statistics. Member users without the monitoring policy can view information only for their graphs.
 
 > ### Note:  
