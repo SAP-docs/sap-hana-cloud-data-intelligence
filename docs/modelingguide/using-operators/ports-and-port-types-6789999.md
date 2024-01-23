@@ -1,0 +1,352 @@
+<!-- loio67899991ea294f5fa8967e4c0382d2fa -->
+
+# Ports and Port Types
+
+The operator uses ports as an interface to communicate between operators in a graph.
+
+A port definition includes the elements in the following table.
+
+
+<table>
+<tr>
+<th valign="top">
+
+Element
+
+</th>
+<th valign="top">
+
+Description
+
+</th>
+</tr>
+<tr>
+<td valign="top">
+
+Purpose
+
+</td>
+<td valign="top">
+
+Input or output port.
+
+> ### Note:  
+> There are no specific error ports. Use output ports to communicate error messages.
+
+
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+Name
+
+</td>
+<td valign="top">
+
+Unique string that consists of alphanumeric characters only.
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+Type
+
+</td>
+<td valign="top">
+
+String with a defined structure. The structure includes a mandatory base type and an optional semantic type. The semantic type can have a hierarchical substructure, separated with periods, and an optional wildcard at the end. The semantic type has the following form: `<base type>.<semantic type>.`
+
+> ### Example:  
+> `string.com.sap.base64.*`
+> 
+> `com.mycompany`
+
+
+
+</td>
+</tr>
+</table>
+
+Port types with a wildcard are called incomplete types. The following example shows a general port type specification:
+
+> ### Example:  
+> `int64.com.sap.base64.*`
+> 
+> `[]blob.com.mycompany`
+
+You can use the semantics of the type specification to enrich types with additional information, which the owner of the types can use. However, the engine doesn't evaluate beyond the compatibility checks as described in the **Is compatible with type “any”** column in the following base types table.
+
+The **Array** column in the table indicates whether the base type can use arrays. For example, `[]float64` can use arrays, but not `[]message`.
+
+> ### Note:  
+> Some subengines don't support all array types.
+
+
+
+All port types fall into one of the built-in base types listed in the following table.
+
+
+<table>
+<tr>
+<th valign="top">
+
+Type
+
+</th>
+<th valign="top">
+
+Description
+
+</th>
+<th valign="top">
+
+Is compatible with type "any"
+
+</th>
+<th valign="top">
+
+Array
+
+</th>
+</tr>
+<tr>
+<td valign="top">
+
+any
+
+</td>
+<td valign="top">
+
+generic type
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+<td valign="top">
+
+no
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+string
+
+</td>
+<td valign="top">
+
+character sequence
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+blob
+
+</td>
+<td valign="top">
+
+binary large object
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+int64
+
+</td>
+<td valign="top">
+
+8-byte signed integer
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+float64
+
+</td>
+<td valign="top">
+
+8-byte decimal number
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+byte
+
+</td>
+<td valign="top">
+
+single character
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+<td valign="top">
+
+yes
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+message
+
+</td>
+<td valign="top">
+
+structure with header and body
+
+</td>
+<td valign="top">
+
+no
+
+</td>
+<td valign="top">
+
+no
+
+</td>
+</tr>
+<tr>
+<td valign="top">
+
+stream
+
+</td>
+<td valign="top">
+
+unstructured data stream
+
+</td>
+<td valign="top">
+
+no
+
+</td>
+<td valign="top">
+
+no
+
+</td>
+</tr>
+</table>
+
+
+
+<a name="loio67899991ea294f5fa8967e4c0382d2fa__section_ibm_pmj_fwb"/>
+
+## Use Cases
+
+The following list describes use cases for pipeline-specific types:
+
+-   Use the base type “any” when an operator is agnostic of the type and helps to avoid the redefinitions of the operator for each type. An example is the multiplexer operators.
+-   The base type “message” consists of a message header and the payload stored in the body. Messages have a size limit of 10 MB. The size limit means that larger payloads have to be split into chunks.
+
+    > ### Example:  
+    > In the “Read File” operator, the header of the response messages contains the information to interpret the content of the body.
+    > 
+    > In other scenarios, such as for the “Copy File” operator, the input message triggers an operator to transfer data that is specified by the message, and the output message transfers the result of this operation. The header information can then be used to match the requests with the results. Therefore, it doesn't make sense to include arrays of messages themselves. However, arrays in the body are possible.
+
+-   The base type “stream” is special because the other types, including “any” or “message”, have a fixed structure at execution time \(elementary type and length\). Streams, in general, are unstructured. Typical examples are the IO streams `stdin`, `stdout`, `stderr` of the operating system or data streams generated by sensors.
+
+
+
+<a name="loio67899991ea294f5fa8967e4c0382d2fa__section_pmr_323_dfb"/>
+
+## Conversions
+
+In general, there are no implicit type conversions or propagations. If the port types are incompatible according to the rules, you can't run a graph. However, there are two exceptions to the rule: Input ports of type “message” and output ports of type “message”.
+
+**Input ports of type “message”**
+
+In a graph that flows from left to right, if the output port of the operator feeding into the input port is a nonstream base type, the engine transforms the output into a message automatically. For “message” types, this behavior is obvious and for all other types, the engine generates a minimal message storing the output result in its body.
+
+**Output ports of type “message”**
+
+The engine handles the incoming message automatically, but the outgoing message triggers an action in the Modeler application when you try to connect the ports.
+
+> ### Example:  
+> -   Output port is of type “message”, “incomplete”, or “generic” that allows for a message to be passed.
+> -   Input port of the receiving operator is of type “string”.
+
+In these exception cases, select one of the following two methods to transform the outgoing message to a string:
+
+-   Concatenate the string from the serialized header and body of the message.
+-   Use only the body of the message and output it as a string.
+
+    > ### Note:  
+    > If this body itself is a message, then it's handled as in the first case.
+
+
+The choice depends on the semantics of the receiving operator. Therefore, there's no one recommended approach.
+
+-   **[Compatible Port Types](compatible-port-types-45ae47e.md "You can connect two operators only if the output port of the first operator and the
+		input port of the second operator are compatible. ")**  
+You can connect two operators only if the output port of the first operator and the input port of the second operator are compatible.
+-   **[Table Messages](table-messages-cf6b74c.md "A table message is an SAP Data Intelligence Modeler message that represents tabular data. The port type for table messages is
+			message.table.")**  
+A table message is an SAP Data Intelligence Modeler message that represents tabular data. The port type for table messages is `message.table`.
+-   **[Data Types in Operator Ports](data-types-in-operator-ports-9fa7d06.md "Before you choose a data type for a new port, consider the type of connection and what the downstream or upstream operator accepts. ")**  
+Before you choose a data type for a new port, consider the type of connection and what the downstream or upstream operator accepts.
+-   **[Adding Ports to Operators](adding-ports-to-operators-3e9e3e5.md "Add additional ports to JavaScript, Python, Multiplexer, and other extensible operators.")**  
+Add additional ports to JavaScript, Python, Multiplexer, and other extensible operators.
+
