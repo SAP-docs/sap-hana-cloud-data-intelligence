@@ -1,0 +1,10 @@
+version = 1
+SPDX-PackageName = "sap-hana-cloud-data-intelligence"
+SPDX-PackageSupplier = "Karen Neeb (karen.neeb@sap.com)"
+SPDX-PackageDownloadLocation = "https://github.com/SAP-docs/sap-hana-cloud-data-intelligence"
+
+[[annotations]]
+path = "**"
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2024 SAP SE or an SAP affiliate company and SAP-docs/sap-hana-cloud-data-intelligence contributors"
+SPDX-License-Identifier = "CC-BY-4.0"
